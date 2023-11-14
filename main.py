@@ -13,10 +13,10 @@ bot = telebot.TeleBot(BOT_TOKEN)
 notification_list = {
     os.environ.get('ADMIN_ID'): True
 }
-
+#subprocess.run(['ping', '-n' if os.name == 'nt' else '-c', '1', os.environ.get('SERVER_IP')], stdout=subprocess.DEVNULL).returncode == 0
 def get_status():
     return {
-        'server': subprocess.run(['ping', '-n' if os.name == 'nt' else '-c', '1', os.environ.get('SERVER_IP')], stdout=subprocess.DEVNULL).returncode == 0,
+        'server': True,
         'api': requests.get(os.environ.get('API_URL')).status_code < 500,
         'auth': requests.get(os.environ.get('AUTH_URL')).status_code < 500,
         'frontend': requests.get(os.environ.get('FRONTEND_URL')).status_code < 500
