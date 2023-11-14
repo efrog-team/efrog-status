@@ -3,10 +3,9 @@ from telebot import TeleBot
 from dotenv import load_dotenv
 from requests import get
 from apscheduler.schedulers.background import BackgroundScheduler
-from icmplib import ping
 from fastapi import FastAPI
 from threading import Thread
-from socket import create_connection, socket
+from socket import create_connection, error
 
 app = FastAPI()
 
@@ -23,13 +22,15 @@ notification_list = {
 }
 
 def get_status():
-    server_status = ping(environ.get('SERVER_IP'), timeout=1, count=1, privileged=False).is_alive
+    server_status = True
     nginx_status = True
     try:
-        create_connection((environ.get('SERVER_IP'), 80), timeout=1)
-        nginx_status = True
-    except:
+        sock = create_connection((environ.get('SERVER_IP'), 80), timeout=1)
+        sock.close()
+    except error as e:
         nginx_status = False
+        if e.errno == 111:
+            server_status = False
     api_status = True
     try:
         api_status = get(environ.get('API_URL'),timeout=1).status_code < 500
