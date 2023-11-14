@@ -1,11 +1,12 @@
-import os
+from os import environ
 from telebot import TeleBot
 from dotenv import load_dotenv
 from requests import get
 from apscheduler.schedulers.background import BackgroundScheduler
-import socket
+from ping3 import ping
 from fastapi import FastAPI
-import threading
+from threading import Thread
+from socket import create_connection
 
 app = FastAPI()
 
@@ -14,34 +15,50 @@ async def root():
     return {}
 
 load_dotenv('.env')
-BOT_TOKEN = os.environ.get('BOT_TOKEN')
+BOT_TOKEN = environ.get('BOT_TOKEN')
 bot = TeleBot(BOT_TOKEN)
 
 notification_list = {
-    int(os.environ.get('ADMIN_ID')): True
+    int(environ.get('ADMIN_ID')): True
 }
 
 def get_status():
-    server_status = True
+    nginx_status = True
     try:
-        socket_server = socket.create_connection((os.environ.get('SERVER_IP'), 80), timeout=1)
-        socket_server.close()
-        server_status = True
+        create_connection((environ.get('SERVER_IP'), 80), timeout=1)
+        nginx_status = True
     except:
-        server_status = False
+        nginx_status = False
+    api_status = True
+    try:
+        api_status = get(environ.get('API_URL'),timeout=1).status_code < 500
+    except:
+        api_status = False
+    auth_status = True
+    try:
+        auth_status = get(environ.get('AUTH_URL'),timeout=1).status_code < 500
+    except:
+        auth_status = False
+    frontend_status = True
+    try:
+        frontend_status = get(environ.get('FRONTEND_URL'),timeout=1).status_code < 500
+    except:
+        frontend_status = False
     return {
-        'server': server_status,
-        'api': get(os.environ.get('API_URL')).status_code < 500,
-        'auth': get(os.environ.get('AUTH_URL')).status_code < 500,
-        'frontend': get(os.environ.get('FRONTEND_URL')).status_code < 500
+        'server': ping(environ.get('SERVER_IP'), timeout=1) is not None,
+        'nginx': nginx_status,
+        'api': api_status,
+        'auth': auth_status,
+        'frontend': frontend_status
     }
 
 def send_status(id, status):
     bot.send_message(id, "\n".join([
-        f"Server ({os.getenv('SERVER_IP')}): {'✅ Accessible' if status['server'] else '❌ Inaccessible'}",
-        f"API ({os.getenv('API_URL')}): {'✅ Accessible' if status['api'] else '❌ Inaccessible'}",
-        f"Auth ({os.getenv('AUTH_URL')}): {'✅ Accessible' if status['auth'] else '❌ Inaccessible'}",
-        f"Front-end ({os.getenv('FRONTEND_URL')}): {'✅ Accessible' if status['frontend'] else '❌ Inaccessible'}"
+        f"Server ({environ.get('SERVER_IP')}): {'✅ Accessible' if status['server'] else '❌ Inaccessible'}",
+        f"NGINX ({environ.get('SERVER_IP')}:80): {'✅ Accessible' if status['nginx'] else '❌ Inaccessible'}",
+        f"API ({environ.get('API_URL')}): {'✅ Accessible' if status['api'] else '❌ Inaccessible'}",
+        f"Auth ({environ.get('AUTH_URL')}): {'✅ Accessible' if status['auth'] else '❌ Inaccessible'}",
+        f"Front-end ({environ.get('FRONTEND_URL')}): {'✅ Accessible' if status['frontend'] else '❌ Inaccessible'}"
     ]), disable_web_page_preview=True)
 
 def check_status():
@@ -61,21 +78,21 @@ def send_status_message(message):
 @bot.message_handler(commands=['add_notification'])
 def add_notification(message):
     notification_list[message.from_user.id] = True
-    bot.send_message(message.from_user.id, 'You are added to a notification list')
+    bot.send_message(message.from_user.id, 'You are added to the notification list')
 
 @bot.message_handler(commands=['check_notification'])
 def check_notification(message):
     if message.from_user.id in notification_list:
-        bot.send_message(message.from_user.id, 'You are in a notification list')
+        bot.send_message(message.from_user.id, 'You are in the notification list')
     else:
-        bot.send_message(message.from_user.id, 'You are not in a notification list')
+        bot.send_message(message.from_user.id, 'You are not in the notification list')
 
 @bot.message_handler(commands=['remove_notification'])
 def remove_notification(message):
     if message.from_user.id in notification_list:
         del notification_list[message.from_user.id]
-        bot.send_message(message.from_user.id, 'You are removed from a notification list')
+        bot.send_message(message.from_user.id, 'You are removed from the notification list')
     else:
-        bot.send_message(message.from_user.id, 'You are not in a notification list')
+        bot.send_message(message.from_user.id, 'You are not in the notification list')
 
-threading.Thread(target=bot.infinity_polling).start()
+Thread(target=bot.infinity_polling).start()
