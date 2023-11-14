@@ -3,7 +3,7 @@ from telebot import TeleBot
 from dotenv import load_dotenv
 from requests import get
 from apscheduler.schedulers.background import BackgroundScheduler
-from ping3 import ping
+import socket
 
 if os.environ.get('PROD') is None:
 	load_dotenv('.env')
@@ -15,8 +15,15 @@ notification_list = {
 }
 
 def get_status():
+    server_status = True
+    try:
+        socket_server = socket.create_connection((os.environ.get('SERVER_IP'), 80), timeout=1)
+        socket_server.close()
+        server_status = True
+    except:
+        server_status = False
     return {
-        'server': ping(os.environ.get('SERVER_IP')) is not None,
+        'server': server_status,
         'api': get(os.environ.get('API_URL')).status_code < 500,
         'auth': get(os.environ.get('AUTH_URL')).status_code < 500,
         'frontend': get(os.environ.get('FRONTEND_URL')).status_code < 500

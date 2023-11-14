@@ -2,4 +2,3 @@ APScheduler
 pyTelegramBotAPI
 python-dotenv
 requests
-ping3
