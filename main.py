@@ -1,25 +1,25 @@
 import os
-import telebot
-import dotenv
-import subprocess
-import requests
+from telebot import TeleBot
+from dotenv import load_dotenv
+from requests import get
 from apscheduler.schedulers.background import BackgroundScheduler
+from ping3 import ping
 
 if os.environ.get('PROD') is None:
-	dotenv.load_dotenv('.env')
+	load_dotenv('.env')
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
-bot = telebot.TeleBot(BOT_TOKEN)
+bot = TeleBot(BOT_TOKEN)
 
 notification_list = {
     os.environ.get('ADMIN_ID'): True
 }
-#subprocess.run(['ping', '-n' if os.name == 'nt' else '-c', '1', os.environ.get('SERVER_IP')], stdout=subprocess.DEVNULL).returncode == 0
+
 def get_status():
     return {
-        'server': True,
-        'api': requests.get(os.environ.get('API_URL')).status_code < 500,
-        'auth': requests.get(os.environ.get('AUTH_URL')).status_code < 500,
-        'frontend': requests.get(os.environ.get('FRONTEND_URL')).status_code < 500
+        'server': ping(os.environ.get('SERVER_IP')) is not None,
+        'api': get(os.environ.get('API_URL')).status_code < 500,
+        'auth': get(os.environ.get('AUTH_URL')).status_code < 500,
+        'frontend': get(os.environ.get('FRONTEND_URL')).status_code < 500
     }
 
 def send_status(id, status):
