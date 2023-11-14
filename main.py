@@ -80,6 +80,4 @@ def remove_notification(message):
     else:
         bot.send_message(message.from_user.id, 'You are not in a notification list')
 
-if __name__ == "__main__":
-    threading.Thread(target=bot.infinity_polling).start()
-    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
+threading.Thread(target=bot.infinity_polling).start()
