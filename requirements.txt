@@ -4,4 +4,4 @@ python-dotenv
 requests
 fastapi
 uvicorn
-ping3
+icmplib
