@@ -2,3 +2,5 @@ APScheduler
 pyTelegramBotAPI
 python-dotenv
 requests
+fastapi
+uvicorn

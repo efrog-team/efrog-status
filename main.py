@@ -4,6 +4,15 @@ from dotenv import load_dotenv
 from requests import get
 from apscheduler.schedulers.background import BackgroundScheduler
 import socket
+from fastapi import FastAPI
+import uvicorn
+import threading
+
+app = FastAPI()
+
+@app.get("/")
+async def root():
+    return {}
 
 if os.environ.get('PROD') is None:
 	load_dotenv('.env')
@@ -71,4 +80,6 @@ def remove_notification(message):
     else:
         bot.send_message(message.from_user.id, 'You are not in a notification list')
 
-bot.infinity_polling()
+if __name__ == "__main__":
+    threading.Thread(target=bot.infinity_polling).start()
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
