@@ -29,7 +29,7 @@ def get_status():
         sock.close()
     except error as e:
         nginx_status = False
-        if e.errno == 111:
+        if e.errno != 111:
             server_status = False
     api_status = True
     try:
