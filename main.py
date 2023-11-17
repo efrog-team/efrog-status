@@ -5,7 +5,7 @@ from requests import get
 from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI
 from threading import Thread
-from socket import create_connection, error
+from socket import create_connection
 
 app = FastAPI()
 
@@ -23,14 +23,17 @@ notification_list = {
 
 def get_status():
     server_status = True
+    try:
+        sock = create_connection((environ.get('SERVER_IP'), 3389), timeout=1)
+        sock.close()
+    except:
+        server_status = False
     nginx_status = True
     try:
         sock = create_connection((environ.get('SERVER_IP'), 80), timeout=1)
         sock.close()
-    except error as e:
+    except:
         nginx_status = False
-        if e.errno != 111:
-            server_status = False
     api_status = True
     try:
         api_status = get(environ.get('API_URL'),timeout=1).status_code < 500
