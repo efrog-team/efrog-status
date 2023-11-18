@@ -10,6 +10,10 @@ from socket import create_connection
 
 app = FastAPI()
 
+@app.get("/keep-alive")
+def keep_alive():
+    return {}
+
 load_dotenv('.env')
 BOT_TOKEN = environ.get('BOT_TOKEN')
 bot = TeleBot(BOT_TOKEN)
@@ -75,11 +79,11 @@ def root():
 
 def send_status(id, status):
     bot.send_message(id, '\n'.join([
-        f"Server ({environ.get('SERVER_IP')}):\n    {'✅ Accessible' if status['server'] else '❌ Inaccessible'}",
-        f"NGINX ({environ.get('SERVER_IP')}:80):\n    {'✅ Accessible' if status['nginx'] else '❌ Inaccessible'}",
-        f"API ({environ.get('API_URL')}):\n    {'✅ Accessible' if status['api'] else '❌ Inaccessible'}",
-        f"Auth ({environ.get('AUTH_URL')}):\n    {'✅ Accessible' if status['auth'] else '❌ Inaccessible'}",
-        f"Front-end ({environ.get('FRONTEND_URL')}):\n    {'✅ Accessible' if status['frontend'] else '❌ Inaccessible'}"
+        f"Server ({environ.get('SERVER_IP')}):\n{'✅ Accessible' if status['server'] else '❌ Inaccessible'}",
+        f"NGINX ({environ.get('SERVER_IP')}:80):\{'✅ Accessible' if status['nginx'] else '❌ Inaccessible'}",
+        f"API ({environ.get('API_URL')}):\n{'✅ Accessible' if status['api'] else '❌ Inaccessible'}",
+        f"Auth ({environ.get('AUTH_URL')}):\n{'✅ Accessible' if status['auth'] else '❌ Inaccessible'}",
+        f"Front-end ({environ.get('FRONTEND_URL')}):\n{'✅ Accessible' if status['frontend'] else '❌ Inaccessible'}"
     ]), disable_web_page_preview=True)
 
 def check_status():
