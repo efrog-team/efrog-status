@@ -108,4 +108,4 @@ def remove_notification(message):
     else:
         bot.send_message(message.from_user.id, 'You are not in the notification list')
 
-Thread(target=bot.infinity_polling).start()
+Thread(target=bot.infinity_polling, daemon=True).start()
