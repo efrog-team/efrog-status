@@ -87,10 +87,12 @@ def send_status(id, status):
     ]), disable_web_page_preview=True)
 
 def check_status():
+    global last_status
     status = get_status()
     if status != last_status:
         for id in notification_list:
             send_status(id, status)
+    last_status = status
 
 sched = BackgroundScheduler()
 sched.add_job(check_status, trigger='cron', minute='*/30')
