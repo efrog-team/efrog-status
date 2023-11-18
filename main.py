@@ -21,6 +21,14 @@ notification_list = {
     int(environ.get('ADMIN_ID')): True
 }
 
+last_status = {
+    'server': True,
+    'nginx': True,
+    'api': True,
+    'auth': True,
+    'frontend': True
+}
+
 def get_status():
     server_status = True
     try:
@@ -68,7 +76,7 @@ def send_status(id, status):
 
 def check_status():
     status = get_status()
-    if False in status.values():
+    if status != last_status:
         for id in notification_list:
             send_status(id, status)
 
