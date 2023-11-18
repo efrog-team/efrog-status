@@ -4,14 +4,11 @@ from dotenv import load_dotenv
 from requests import get
 from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 from threading import Thread
 from socket import create_connection
 
 app = FastAPI()
-
-@app.get("/")
-async def root():
-    return {}
 
 load_dotenv('.env')
 BOT_TOKEN = environ.get('BOT_TOKEN')
@@ -65,8 +62,19 @@ def get_status():
         'frontend': frontend_status
     }
 
+@app.get("/", response_class=HTMLResponse)
+def root():
+    status = get_status()
+    return '<div style="font-size: 18px; font-family: monospace;">' + '<br>'.join([
+        f"<span>Server ({environ.get('SERVER_IP')}):<br>{'✅ Accessible' if status['server'] else '❌ Inaccessible'}</span>",
+        f"<span>NGINX ({environ.get('SERVER_IP')}:80):<br>{'✅ Accessible' if status['nginx'] else '❌ Inaccessible'}</span>",
+        f"<span>API ({environ.get('API_URL')}):<br>{'✅ Accessible' if status['api'] else '❌ Inaccessible'}</span>",
+        f"<span>Auth ({environ.get('AUTH_URL')}):<br>{'✅ Accessible' if status['auth'] else '❌ Inaccessible'}</span>",
+        f"<span>Front-end ({environ.get('FRONTEND_URL')}):<br>{'✅ Accessible' if status['frontend'] else '❌ Inaccessible'}</span>"
+    ]) + '</div>'
+
 def send_status(id, status):
-    bot.send_message(id, "\n".join([
+    bot.send_message(id, '\n'.join([
         f"Server ({environ.get('SERVER_IP')}):\n    {'✅ Accessible' if status['server'] else '❌ Inaccessible'}",
         f"NGINX ({environ.get('SERVER_IP')}:80):\n    {'✅ Accessible' if status['nginx'] else '❌ Inaccessible'}",
         f"API ({environ.get('API_URL')}):\n    {'✅ Accessible' if status['api'] else '❌ Inaccessible'}",
