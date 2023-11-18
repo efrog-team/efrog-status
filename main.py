@@ -80,7 +80,7 @@ def root():
 def send_status(id, status):
     bot.send_message(id, '\n'.join([
         f"Server ({environ.get('SERVER_IP')}):\n{'✅ Accessible' if status['server'] else '❌ Inaccessible'}",
-        f"NGINX ({environ.get('SERVER_IP')}:80):\{'✅ Accessible' if status['nginx'] else '❌ Inaccessible'}",
+        f"NGINX ({environ.get('SERVER_IP')}:80):\n{'✅ Accessible' if status['nginx'] else '❌ Inaccessible'}",
         f"API ({environ.get('API_URL')}):\n{'✅ Accessible' if status['api'] else '❌ Inaccessible'}",
         f"Auth ({environ.get('AUTH_URL')}):\n{'✅ Accessible' if status['auth'] else '❌ Inaccessible'}",
         f"Front-end ({environ.get('FRONTEND_URL')}):\n{'✅ Accessible' if status['frontend'] else '❌ Inaccessible'}"
