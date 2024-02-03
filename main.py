@@ -23,26 +23,20 @@ notification_list = {
 }
 
 last_status = {
-    'server': True,
-    'nginx': True,
+    'proxy': True,
     'api': True,
     'auth': True,
-    'frontend': True
+    'frontend': True,
+    'hub': True
 }
 
 def get_status():
-    server_status = True
-    try:
-        sock = create_connection((environ.get('SERVER_IP'), 3389), timeout=1)
-        sock.close()
-    except:
-        server_status = False
-    nginx_status = True
+    proxy_status = True
     try:
         sock = create_connection((environ.get('SERVER_IP'), 80), timeout=1)
         sock.close()
     except:
-        nginx_status = False
+        proxy_status = False
     api_status = True
     try:
         api_status = get(environ.get('API_URL'),timeout=1).status_code < 500
@@ -58,32 +52,37 @@ def get_status():
         frontend_status = get(environ.get('FRONTEND_URL'),timeout=1).status_code < 500
     except:
         frontend_status = False
+    hub_status = True
+    try:
+        hub_status = get(environ.get('HUB_URL'),timeout=1).status_code < 500
+    except:
+        hub_status = False
     return {
-        'server': server_status,
-        'nginx': nginx_status,
+        'proxy': proxy_status,
         'api': api_status,
         'auth': auth_status,
-        'frontend': frontend_status
+        'frontend': frontend_status,
+        'hub': hub_status
     }
 
 @app.get("/", response_class=HTMLResponse)
 def root():
     status = get_status()
     return '<div style="font-size: 18px; font-family: monospace;">' + '<br>'.join([
-        f"<span>Server ({environ.get('SERVER_IP')}):<br>{'✅ Accessible' if status['server'] else '❌ Inaccessible'}</span>",
-        f"<span>NGINX ({environ.get('SERVER_IP')}:80):<br>{'✅ Accessible' if status['nginx'] else '❌ Inaccessible'}</span>",
+        f"<span>Proxy ({environ.get('SERVER_IP')}:80):<br>{'✅ Accessible' if status['proxy'] else '❌ Inaccessible'}</span>",
         f"<span>API ({environ.get('API_URL')}):<br>{'✅ Accessible' if status['api'] else '❌ Inaccessible'}</span>",
         f"<span>Auth ({environ.get('AUTH_URL')}):<br>{'✅ Accessible' if status['auth'] else '❌ Inaccessible'}</span>",
-        f"<span>Front-end ({environ.get('FRONTEND_URL')}):<br>{'✅ Accessible' if status['frontend'] else '❌ Inaccessible'}</span>"
+        f"<span>Front-end ({environ.get('FRONTEND_URL')}):<br>{'✅ Accessible' if status['frontend'] else '❌ Inaccessible'}</span>",
+        f"<span>Hub ({environ.get('HUB_URL')}):<br>{'✅ Accessible' if status['hub'] else '❌ Inaccessible'}</span>"
     ]) + '</div>'
 
 def send_status(id, status):
     bot.send_message(id, '\n'.join([
-        f"Server ({environ.get('SERVER_IP')}):\n{'✅ Accessible' if status['server'] else '❌ Inaccessible'}",
-        f"NGINX ({environ.get('SERVER_IP')}:80):\n{'✅ Accessible' if status['nginx'] else '❌ Inaccessible'}",
+        f"Proxy ({environ.get('SERVER_IP')}:80):\n{'✅ Accessible' if status['proxy'] else '❌ Inaccessible'}",
         f"API ({environ.get('API_URL')}):\n{'✅ Accessible' if status['api'] else '❌ Inaccessible'}",
         f"Auth ({environ.get('AUTH_URL')}):\n{'✅ Accessible' if status['auth'] else '❌ Inaccessible'}",
-        f"Front-end ({environ.get('FRONTEND_URL')}):\n{'✅ Accessible' if status['frontend'] else '❌ Inaccessible'}"
+        f"Front-end ({environ.get('FRONTEND_URL')}):\n{'✅ Accessible' if status['frontend'] else '❌ Inaccessible'}",
+        f"Hub ({environ.get('HUB_URL')}):\n{'✅ Accessible' if status['hub'] else '❌ Inaccessible'}"
     ]), disable_web_page_preview=True)
 
 def check_status():
